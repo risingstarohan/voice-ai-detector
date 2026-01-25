@@ -3,10 +3,9 @@ from pydantic import BaseModel
 import requests, base64
 from pydub import AudioSegment
 
-
+import os
 AudioSegment.converter = r"C:\Users\rohan\Downloads\ffmpeg-8.0.1-essentials_build\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe"
-audio = AudioSegment.from_mp3("input.mp3")
-audio.export("input.wav", format="wav")
+
 # Example placeholder for your detection function
 def analyze_voice(file_path):
     # For demo purposes, always return HUMAN with 0.95 confidence

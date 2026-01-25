@@ -4,6 +4,11 @@ import requests
 import base64
 import os
 from pydub import AudioSegment
+import imageio_ffmpeg
+
+# Make pydub use imageio-ffmpeg as converter
+AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+
 from detector import analyze_voice
 
 API_KEY = "8084b8d9671466b57cf0c197f8d8c81f297fc80c8af697db59b9d591c56f992d"

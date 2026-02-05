@@ -1,9 +1,10 @@
 from detector import detect_ai_voice
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Request
 from pydantic import BaseModel, Field
 import base64
 import uuid
 import os
+from datetime import datetime
 
 app = FastAPI(title="AI Generated Voice Detection API")
 
@@ -28,12 +29,10 @@ def detect_voice(
     data: AudioRequest,
     x_api_key: str = Header(None)
 ):
-    # 🔐 API KEY CHECK
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
     try:
-        # Decode base64 audio
         audio_bytes = base64.b64decode(data.audio_base64)
 
         filename = f"{uuid.uuid4()}.{data.audio_format}"
@@ -42,10 +41,8 @@ def detect_voice(
         with open(file_path, "wb") as f:
             f.write(audio_bytes)
 
-        # Run detection logic
         result, confidence = detect_ai_voice(file_path)
 
-        # Cleanup
         os.remove(file_path)
 
         return {
@@ -59,16 +56,22 @@ def detect_voice(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ------------------- Honeypot Endpoint -------------------
-@app.get("/honeypot")
-def honeypot_check(x_api_key: str = Header(None)):
+# ------------------- Honeypot Endpoint (405 SAFE) -------------------
+@app.api_route("/honeypot", methods=["GET", "POST", "HEAD", "OPTIONS"])
+def honeypot_check(
+    request: Request,
+    x_api_key: str = Header(None)
+):
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     return {
-        "status": "active",
+        "honeypot": True,
+        "active": True,
         "service": "agentic-honeypot",
-        "message": "Honeypot endpoint reachable",
-        "honeypot": True
+        "method": request.method,
+        "timestamp": datetime.utcnow().isoformat(),
+        "message": "Honeypot endpoint reachable"
     }
+
 

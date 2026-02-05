@@ -22,13 +22,14 @@ class AudioRequest(BaseModel):
         allow_population_by_field_name = True
 
 
+# ------------------- AI Voice Detection Endpoint -------------------
 @app.post("/detect")
 def detect_voice(
     data: AudioRequest,
     x_api_key: str = Header(None)
 ):
     # 🔐 API KEY CHECK
-    if API_KEY and x_api_key != API_KEY:
+    if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
     try:
@@ -56,3 +57,18 @@ def detect_voice(
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ------------------- Honeypot Endpoint -------------------
+@app.get("/honeypot")
+def honeypot_check(x_api_key: str = Header(None)):
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    return {
+        "status": "active",
+        "service": "agentic-honeypot",
+        "message": "Honeypot endpoint reachable",
+        "honeypot": True
+    }
+
